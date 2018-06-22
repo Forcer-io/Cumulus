@@ -6,8 +6,11 @@ global class BGE_HandsOnGridController {
 
     public Boolean hasError {get; set;}
 
-    public BGE_HandsOnGridController() {
+    public Id batchId {get; set;}
 
+    public BGE_HandsOnGridController(ApexPages.StandardController stdctl) {
+
+        this.batchId = stdctl.getId();
         hasError = false;
     }
 
