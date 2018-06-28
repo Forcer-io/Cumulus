@@ -7,6 +7,8 @@
         $scope.nextPageAction = nextPageAction;
         $scope.prevPageAction = prevPageAction;
         $scope.backAction = backAction;
+        
+        console.log('BATCH ID: '+batchId);
 
         BGE_HandsOnGridController.initGrid({batchId: batchId}, onInitHandler);
 

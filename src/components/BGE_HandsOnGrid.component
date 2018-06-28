@@ -1,6 +1,6 @@
-<apex:page standardController="DataImportBatch__c" extensions="BGE_HandsOnGridController" showHeader="false" sidebar="false" docType="html-5.0">
+<apex:component access="public" id="BGE_HandsOnGrid" controller="DataImportBatch__c" extensions="BGE_HandsOnGridController">
 
-    <html ng-app="myApp" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+    <apex:attribute name="batchId" type="Id" assignTo="{!batchId}" />
 
     <!-- AngularJs 1.6.4 -->
     <apex:includeScript value="{!URLFOR($Resource.BGEResources, '/js/utils/angular.min.js')}"/>
@@ -36,6 +36,7 @@
     <script>
 
         var batchId = '{!$currentpage.parameters.batchId}';
+        console.log('batch id in page script: '+batchId);
         var resourcePath = "{!URLFOR($Resource.BGEResources, '')}";
         var hot = null;
 
@@ -149,6 +150,4 @@
 
     </div>
 
-    </html>
-
-</apex:page>
+</apex:component>

@@ -4,15 +4,10 @@ global class BGE_HandsOnGridController {
     private static final String ROW_DML = 'ROW_DML';
     private static final String DATA_IMPORT_NAME = 'DataImport__c';
 
-    public Boolean hasError {get; set;}
+    public static Boolean hasError {get; set;}
 
-    public Id batchId {get; set;}
+    public static Id batchId;
 
-    public BGE_HandsOnGridController(ApexPages.StandardController stdctl) {
-
-        this.batchId = stdctl.getId();
-        hasError = false;
-    }
 
     @RemoteAction
     global static Map<String, Object> initGrid(Map<String, Object> parameters) {
@@ -20,8 +15,10 @@ global class BGE_HandsOnGridController {
         Map<String, Object> result = new Map<String, Object>();
 
         BGE_HandsOnGridSelector selector = new BGE_HandsOnGridSelector();
+        System.debug('WHAT IS THE BATCH ID? '+batchId);
 
-        Id batchId = Id.valueOf((String) parameters.get('batchId'));
+        // Id batchId = batchId;
+        // Id batchId = Id.valueOf((String) parameters.get('batchId'));
 
         DataImportBatch__c batch = selector.getBatchById(batchId);
 
