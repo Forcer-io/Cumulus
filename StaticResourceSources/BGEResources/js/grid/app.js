@@ -10,6 +10,44 @@
 
         BGE_HandsOnGridController.initGrid({batchId: batchId}, onInitHandler);
 
+        var NumberEditorCustom = Handsontable.editors.TextEditor.prototype.extend();
+        var TextEditorCustom = Handsontable.editors.TextEditor.prototype.extend();
+        var DateEditorCustom = Handsontable.editors.DateEditor.prototype.extend();
+
+        NumberEditorCustom.prototype.createElements = function () {
+            // Call the original createElements method
+            Handsontable.editors.TextEditor.prototype.createElements.apply(this, arguments);
+
+            this.TEXTAREA.className = 'htRight handsontableInput';
+
+            Handsontable.dom.empty(this.TEXTAREA_PARENT);
+            this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
+        };
+
+        TextEditorCustom.prototype.createElements = function () {
+
+            // Call the original createElements method
+            Handsontable.editors.TextEditor.prototype.createElements.apply(this, arguments);
+
+            this.TEXTAREA.className = 'htLeft handsontableInput';
+
+            Handsontable.dom.empty(this.TEXTAREA_PARENT);
+            this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
+        };
+
+        DateEditorCustom.prototype.createElements = function () {
+            // Call the original createElements method
+            Handsontable.editors.DateEditor.prototype.createElements.apply(this, arguments);
+
+            // Create datepicker input and update relevant properties
+            this.TEXTAREA.className = 'htLeft handsontableInput';
+
+            // Replace textarea with datepicker input
+            Handsontable.dom.empty(this.TEXTAREA_PARENT);
+            this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
+        };
+
+
         function onInitHandler(result, event) {
 
             $scope.templateId = result.templateId;
@@ -505,9 +543,12 @@
 
         function beforeKeyDownHandler(event) {
 
-            var selection = hot.getSelected();
-            var rowIndex = selection[0];
-            var colIndex = selection[1];
+            var tabKey = event.keyCode === 9;
+            var enterKey = event.keyCode === 13;
+            var leftArrowKey = event.keyCode === 37;
+            var upArrowKey = event.keyCode === 38;
+            var rightArrowKey = event.keyCode === 39;
+            var downArrowKey = event.keyCode === 40;
 
             var selectedColType = hot.getDataType(rowIndex, colIndex);
 
@@ -531,6 +572,10 @@
 
             if (tabKey || leftArrowKey || upArrowKey || rightArrowKey || downArrowKey) {
 
+                var selection = hot.getSelected();
+                var rowIndex = selection[0];
+                var colIndex = selection[1];
+
                 var numberOfColumns = hot.countCols();
                 var numberOfRows = hot.countRows();
 
@@ -541,40 +586,24 @@
 
                 var shiftKeyIsPressed = event.shiftKey;
 
-            /*    if (rowIndex !== 2) {
-                    // We are not in the action column.
-                    // Get the corresponding action icon for that row.
-                    var actionIcon = hot.getCell(rowIndex, 2).childNodes["0"].firstChild;
-
-                    if (actionIcon.hasFocus()) {
-
-                        // remove focus from the icon.
-                        actionIcon.blur();
-                    }
-                }*/
-
-                if (!shiftKeyIsPressed && (tabKey || rightArrowKey)) {
+                if (!shiftKeyIsPressed && (event.keyCode === 9 || event.keyCode === 39)) {
 
                     try {
 
-                        if (colIndex === 0) {
+                        rowIndex++;
 
-                            var tooltipIcon = hot.getCell(rowIndex, 1).childNodes["0"];
-                            var tooltipIconStyle = tooltipIcon.style;
-                            var tooltipIconNotDisplayed = (!tooltipIconStyle || tooltipIconStyle.display === "none");
+                        var tooltipIcon = hot.getCell(rowIndex, 1).childNodes["0"];
+                        var tooltipIconStyle = tooltipIcon.style;
+                        var tooltipDisplayed = tooltipIconStyle && tooltipIconStyle.display !== "none";
 
-                            if(tooltipIconNotDisplayed) {
+                        if (colIndex === lastColumn) {
+
+                            if(!tooltipDisplayed) {
 
                                 // tooltip icon is not being displayed, so skip the cell.
                                 hot.selectCell(rowIndex, 1);
 
-                                var selectedCell = hot.getSelected();
-
-                                var rowIndexSelectedCell = selectedCell[0];
-                                var colIndexSelectedCell = selectedCell[1];
-
-                                // Set the focus on the icon, not on the cell.
-                                var actionIcon = hot.getCell(rowIndexSelectedCell, colIndexSelectedCell).childNodes["0"];
+                                var actionIcon = hot.getCell(rowIndex, 2).childNodes["0"];
 
                                 actionIcon.focus();
                             }
@@ -586,21 +615,12 @@
                         }
                         else if (rowIndex === lastRow && colIndex === lastColumn) {
 
-                            var tooltipIcon = hot.getCell(0, 0).childNodes["0"];
-                            var tooltipIconStyle = tooltipIcon.style;
-                            var tooltipIconNotDisplayed = (!tooltipIconStyle || tooltipIconStyle.display === "none");
-
-                            if(tooltipIconNotDisplayed) {
+                            if(!tooltipDisplayed) {
 
                                 // tooltip icon is not being displayed, so skip the cell.
                                 hot.selectCell(0, 1);
 
-                                var selectedCell = hot.getSelected();
-
-                                var rowIndexSelectedCell = selectedCell[0];
-                                var colIndexSelectedCell = selectedCell[1];
-
-                                var actionIcon = hot.getCell(rowIndexSelectedCell, colIndexSelectedCell).childNodes["0"];
+                                var actionIcon = hot.getCell(rowIndex, colIndex).childNodes["0"];
 
                                 actionIcon.focus();
                             }
@@ -621,38 +641,20 @@
 
                         var tooltipIcon = hot.getCell(rowIndex, 1).childNodes["0"];
                         var tooltipIconStyle = tooltipIcon.style;
+                        var tooltipDisplayed = tooltipIconStyle && tooltipIconStyle.display !== "none";
 
-                        if(tooltipIconStyle.display === "none") {
+                        if (colIndex === 2) {
 
-                            if (colIndex === 2) {
+                            if(!tooltipDisplayed) {
 
-                                if (isFirstRow) {
-
-                                    rowIndex = lastRow;
-                                    colIndex = lastColumn;
-                                }
-                                else {
-
-                                    colIndex = lastRow;
-                                    rowIndex --;
-                                }
+                                colIndex = 0;
                             }
                         }
-                        else {
+                        else if (colIndex === 1) {
 
-                            if (colIndex === 2) {
-
-                                colIndex = 1;
-                            }
-                            else if (colIndex === 1) {
-
-                                if (isFirstRow) {
-
-                                    rowIndex = lastRow;
-                                    colIndex = lastColumn;
-                                }
-                            }
+                            colIndex = 0;
                         }
+
                         hot.selectCell(rowIndex, colIndex);
                     }
                     catch(err) {
@@ -668,7 +670,7 @@
                                 rowIndex = lastRow;
                             }
                             else {
-                                row --;
+                                rowIndex --;
                             }
                         }
                         hot.selectCell(rowIndex, colIndex);
@@ -730,6 +732,8 @@
                 case 'STRING':
                 case 'EMAIL':
                 case 'ID':
+                case 'TEXTAREA':
+                case 'URL':
                     result = 'text';
                     break;
 
@@ -773,6 +777,7 @@
             errorCol.colWidths = 30;
             errorCol.renderer = tooltipCellRenderer;
             errorCol.readOnly = true;
+            errorCol.disableVisualSelection = false;
             frozenColumns.push(errorCol);
 
             var actionCol = new Object();
@@ -780,7 +785,7 @@
             actionCol.data = 'Actions';
             actionCol.colWidths = 80;
             actionCol.className = "htCenter htMiddle action-cell";
-            actionCol.disableVisualSelection = true;
+            actionCol.disableVisualSelection = false;
             frozenColumns.push(actionCol);
 
             for (var i = 0; i < $scope.columnsData.length; i++) {
@@ -798,32 +803,39 @@
 
                 col.className = "htLeft htMiddle slds-truncate";
 
+                col.editor = TextEditorCustom;
+
                 if (templateField.type === "DATE") {
                     col.dateFormat = 'M/D/YYYY';
                     col.className = "htLeft htMiddle slds-truncate custom-date";
                     col.correctFormat = true;
                     col.datePickerConfig = { 'yearRange': [1000, 3000] }
                     col.colWidths = 170;
+                    col.editor = DateEditorCustom;
                 }
                 else if (templateField.type === "CURRENCY") {
                     col.format = '$0,0.00'
                     col.className = "htRight htMiddle slds-truncate";
                     col.title = '<div class="amount-style">' + templateField.label.toUpperCase() + '</div>';
                     col.colWidths = 100;
+                    col.editor = NumberEditorCustom;
                 }
                 else if (templateField.type === "DECIMAL") {
                     col.format = '0.00';
                     col.className = "htRight htMiddle slds-truncate";
                     col.title = '<div class="amount-style">' + templateField.label.toUpperCase() + '</div>';
                     col.colWidths = 100;
+                    col.editor = NumberEditorCustom;
                 }
                 else if (templateField.type === "NUMBER") {
                     col.format = '0';
                     col.className = "htRight htMiddle slds-truncate";
                     col.title = '<div class="amount-style">' + templateField.label.toUpperCase() + '</div>';
                     col.colWidths = 80;
+                    col.editor = NumberEditorCustom;
                 }
-                else if (templateField.type === "EMAIL") {
+                else if (templateField.type === "EMAIL" || templateField.type === "STRING" ||
+                         templateField.type === "TEXTAREA" || templateField.type === "URL") {
 
                 }
                 else if (templateField.type === "BOOLEAN") {
@@ -839,6 +851,7 @@
                     col.type = "numeric";
                     col.format = '0.000%';
                     col.colWidths = 60;
+                    col.editor = NumberEditorCustom;
                 }
                 else if (templateField.type === 'GEOLOCATION') {
                     col.type = "text";
@@ -850,6 +863,7 @@
                     col.correctFormat= true;
                     col.colWidths = 80;
                 }
+
                 if (templateField.type === "PICKLIST") {
                     col.strict = false;
                     // Check if by any change the list containing picklist values are null empty or undefined.
