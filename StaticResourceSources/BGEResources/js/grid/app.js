@@ -543,22 +543,26 @@
 
         function beforeKeyDownHandler(event) {
 
-            var selection = hot.getSelected();
-            var rowIndex = selection[0];
-            var colIndex = selection[1];
+            var tabKey = event.keyCode === 9;
+            var enterKey = event.keyCode === 13;
+            var leftArrowKey = event.keyCode === 37;
+            var upArrowKey = event.keyCode === 38;
+            var rightArrowKey = event.keyCode === 39;
+            var downArrowKey = event.keyCode === 40;
 
             var selectedColType = hot.getDataType(rowIndex, colIndex);
 
             var editor =  hot.getActiveEditor();
 
             if (selectedColType == "dropdown") {
-                if (event.keyCode != 9 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+                if (!tabKey && !leftArrowKey && !upArrowKey && !rightArrowKey && !downArrowKey) {
                     cancelActiveEditor(editor);
                 }
             }
 
-            if (event.keyCode === 9 || event.keyCode === 37 || event.keyCode === 38 || event.keyCode === 39 || event.keyCode === 40) {
+            if (tabKey || leftArrowKey || upArrowKey || rightArrowKey || downArrowKey) {
 
+                var selection = hot.getSelected();
                 var rowIndex = selection[0];
                 var colIndex = selection[1];
 
@@ -574,25 +578,22 @@
 
                 if (!shiftKeyIsPressed && (event.keyCode === 9 || event.keyCode === 39)) {
 
-                    // Tab or right arrow was pressed
-
                     try {
-                        if (colIndex === 0) {
 
-                            var tooltipIcon = hot.getCell(rowIndex, 1).childNodes["0"];
-                            var tooltipIconStyle = tooltipIcon.style;
+                        rowIndex++;
 
-                            if(tooltipIconStyle.display === "none") {
+                        var tooltipIcon = hot.getCell(rowIndex, 1).childNodes["0"];
+                        var tooltipIconStyle = tooltipIcon.style;
+                        var tooltipDisplayed = tooltipIconStyle && tooltipIconStyle.display !== "none";
+
+                        if (colIndex === lastColumn) {
+
+                            if(!tooltipDisplayed) {
 
                                 // tooltip icon is not being displayed, so skip the cell.
                                 hot.selectCell(rowIndex, 1);
 
-                                var selectedCell = hot.getSelected();
-
-                                var rowIndexSelectedCell = selectedCell[0];
-                                var colIndexSelectedCell = selectedCell[1];
-
-                                var actionIcon = hot.getCell(rowIndexSelectedCell, colIndexSelectedCell).childNodes["0"];
+                                var actionIcon = hot.getCell(rowIndex, 2).childNodes["0"];
 
                                 actionIcon.focus();
                             }
@@ -603,20 +604,12 @@
                         }
                         else if (rowIndex === lastRow && colIndex === lastColumn) {
 
-                            var tooltipIcon = hot.getCell(0, 0).childNodes["0"];
-                            var tooltipIconStyle = tooltipIcon.style;
-
-                            if(!tooltipIconStyle || tooltipIconStyle.display === "none") {
+                            if(!tooltipDisplayed) {
 
                                 // tooltip icon is not being displayed, so skip the cell.
                                 hot.selectCell(0, 1);
 
-                                var selectedCell = hot.getSelected();
-
-                                var rowIndexSelectedCell = selectedCell[0];
-                                var colIndexSelectedCell = selectedCell[1];
-
-                                var actionIcon = hot.getCell(rowIndexSelectedCell, colIndexSelectedCell).childNodes["0"];
+                                var actionIcon = hot.getCell(rowIndex, colIndex).childNodes["0"];
 
                                 actionIcon.focus();
                             }
@@ -624,61 +617,40 @@
 
                                 hot.selectCell(0, 0);
                             }
-
                         }
                     }
                     catch(err) {
                         console.log(err);
                     }
                 }
-                else if (event.keyCode === 37 || (shiftKeyIsPressed && event.keyCode === 9) ) {
-
-                    // Left arrow or shift + tab was pressed
+                else if (leftArrowKey || (shiftKeyIsPressed && tabKey) ) {
 
                     try {
 
                         var tooltipIcon = hot.getCell(rowIndex, 1).childNodes["0"];
                         var tooltipIconStyle = tooltipIcon.style;
+                        var tooltipDisplayed = tooltipIconStyle && tooltipIconStyle.display !== "none";
 
-                        if(tooltipIconStyle.display === "none") {
+                        if (colIndex === 2) {
 
-                            if (colIndex === 3) {
+                            if(!tooltipDisplayed) {
 
-                                colIndex = lastColumn;
-
-                                if (isFirstRow) {
-
-                                    rowIndex = lastRow;
-                                }
-                                else {
-
-                                    row --;
-                                }
+                                colIndex = 0;
                             }
                         }
-                        else {
+                        else if (colIndex === 1) {
 
-                            if (colIndex === 2) {
-
-                                colIndex = lastColumn;
-
-                                if (isFirstRow) {
-
-                                    rowIndex = lastRow;
-                                }
-                                else {
-
-                                    row --;
-                                }
-                            }
+                            colIndex = 0;
                         }
+
                         hot.selectCell(rowIndex, colIndex);
                     }
                     catch(err) {
+
                         console.log(err);
                     }
                 }
-                else if (event.keyCode === 38) {
+                else if (upArrowKey) {
                     try {
                         if (colIndex === 1) {
                             colIndex = lastColumn;
@@ -686,7 +658,7 @@
                                 rowIndex = lastRow;
                             }
                             else {
-                                row --;
+                                rowIndex --;
                             }
                         }
                         hot.selectCell(rowIndex, colIndex);
@@ -793,6 +765,7 @@
             errorCol.colWidths = 30;
             errorCol.renderer = tooltipCellRenderer;
             errorCol.readOnly = true;
+            errorCol.disableVisualSelection = false;
             frozenColumns.push(errorCol);
 
             var actionCol = new Object();
@@ -800,6 +773,7 @@
             actionCol.data = 'Actions';
             actionCol.colWidths = 80;
             actionCol.className = "htCenter htMiddle action-cell";
+            actionCol.disableVisualSelection = false;
             frozenColumns.push(actionCol);
 
             for (var i = 0; i < $scope.columnsData.length; i++) {
