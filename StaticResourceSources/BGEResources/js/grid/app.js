@@ -586,7 +586,25 @@
 
                 var shiftKeyIsPressed = event.shiftKey;
 
-                if (!shiftKeyIsPressed && (event.keyCode === 9 || event.keyCode === 39)) {
+                if (rowIndex !== 2) {
+                    // We are not in the action column.
+                    // Get the corresponding action icon for that row.
+                    var actionIcon = hot.getCell(rowIndex, 2).childNodes["0"].firstChild;
+
+                    if (String(actionIcon) == String(document.activeElement) ) {
+
+                        // remove focus from the icon.
+                        $('button').each(function(e) {
+                            if ($(this).is(':focus')) {
+
+                                $(this).blur();
+                                return;
+                            }
+                        });
+                    }
+                }
+
+                if (!shiftKeyIsPressed && (tabKey || rightArrowKey)) {
 
                     try {
 
