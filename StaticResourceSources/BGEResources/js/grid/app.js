@@ -505,22 +505,26 @@
 
         function beforeKeyDownHandler(event) {
 
-            var selection = hot.getSelected();
-            var rowIndex = selection[0];
-            var colIndex = selection[1];
+            var tabKey = event.keyCode === 9;
+            var enterKey = event.keyCode === 13;
+            var leftArrowKey = event.keyCode === 37;
+            var upArrowKey = event.keyCode === 38;
+            var rightArrowKey = event.keyCode === 39;
+            var downArrowKey = event.keyCode === 40;
 
             var selectedColType = hot.getDataType(rowIndex, colIndex);
 
             var editor =  hot.getActiveEditor();
 
             if (selectedColType == "dropdown") {
-                if (event.keyCode != 9 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
-                    cancelActiveEditor(editor);
+                if (!tabKey && !leftArrowKey && !upArrowKey && !rightArrowKey && !downArrowKey) {
+                    disableEdit(editor);
                 }
             }
 
-            if (event.keyCode === 9 || event.keyCode === 37 || event.keyCode === 38 || event.keyCode === 39 || event.keyCode === 40) {
+            if (tabKey || leftArrowKey || upArrowKey || rightArrowKey || downArrowKey) {
 
+                var selection = hot.getSelected();
                 var rowIndex = selection[0];
                 var colIndex = selection[1];
 
@@ -658,7 +662,7 @@
                     }
                 }
             }
-            else if (event.keyCode === 13) {
+            else if (event.keyCode === 13 && selectedColType != "dropdown") {
                 event.stopImmediatePropagation();
 
                 rowIndex ++;
@@ -687,7 +691,7 @@
             }
         }
 
-        function cancelActiveEditor(editor) {
+        function disableEdit(editor) {
             editor.TEXTAREA.setAttribute("disabled", "true");
         }
 
