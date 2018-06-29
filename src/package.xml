@@ -2381,6 +2381,10 @@
         <name>FieldSet</name>
     </types>
     <types>
+        <members>NPSP_BGE_Record_Home</members>
+        <name>FlexiPage</name>
+    </types>
+    <types>
         <members>Account-Household Layout</members>
         <members>Account-Organization Layout</members>
         <members>Address__c-Address Layout</members>
@@ -2452,6 +2456,7 @@
         <members>Contact.New_Recurring_Donation</members>
         <members>Contact.New_Relationship</members>
         <members>Contact.Quick_Update</members>
+        <members>DataImportBatch__c.Select_Template</members>
         <members>LogACall</members>
         <members>NewAccount</members>
         <members>NewContact</members>
